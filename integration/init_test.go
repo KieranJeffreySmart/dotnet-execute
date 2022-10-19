@@ -114,10 +114,12 @@ func TestIntegration(t *testing.T) {
 	Expect(err).ToNot(HaveOccurred())
 
 	settings.Buildpacks.DotnetCoreSDK.Online, err = buildpackStore.Get.
+		WithVersion("1.2.3").
 		Execute(settings.Config.DotnetCoreSDK)
 	Expect(err).ToNot(HaveOccurred())
 
 	settings.Buildpacks.DotnetCoreASPNetRuntime.Online, err = buildpackStore.Get.
+		WithVersion("1.2.3").
 		Execute(settings.Config.DotnetCoreASPNetRuntime)
 	Expect(err).ToNot(HaveOccurred())
 

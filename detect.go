@@ -44,19 +44,19 @@ type ProjectParser interface {
 // depending on the type of app being built. See Configuration for details
 // on how environment variable configuration influences detection.
 //
-// Source Code Apps
+// # Source Code Apps
 //
 // The buildpack will require .NET Core ASP.NET Runtime at launch-time. It will
 // require ICU at launch time. It will require Nodejs at launch time if the app
 // relies on JavaScript components.
 //
-// Framework-dependent Deployments
+// # Framework-dependent Deployments
 //
 // The buildpack will require the .NET Core ASP.NET Runtime at launch-time to
 // run the framework-dependent app. It will require ICU at launch time. It will
 // require Nodejs if the app relies on JavaScript components.
 //
-// Framework-dependent Executables
+// # Framework-dependent Executables
 //
 // The buildpack will require the .NET Core ASP.NET Runtime at launch-time to
 // run the framework-dependent app. It will require ICU at launch time. It will
@@ -215,6 +215,7 @@ func Detect(
 			logger.Debug.Subprocess("Detected '%s'", projectFile)
 			logger.Debug.Break()
 			version, err := projectParser.ParseVersion(projectFile)
+
 			if err != nil {
 				return packit.DetectResult{}, err
 			}
@@ -226,6 +227,8 @@ func Detect(
 				},
 			})
 
+			fmt.Printf("Appended requirement: %s { %s }", requirements[len(requirements)-1].Name, requirements[len(requirements)-1].Metadata)
+
 			requirements = append(requirements, packit.BuildPlanRequirement{
 				Name: "dotnet-core-aspnet-runtime",
 				Metadata: BuildPlanMetadata{
@@ -233,12 +236,16 @@ func Detect(
 				},
 			})
 
+			fmt.Printf("Appended requirement: %s { %s }", requirements[len(requirements)-1].Name, requirements[len(requirements)-1].Metadata)
+
 			backwardsCompatibleRequirements = append(backwardsCompatibleRequirements, packit.BuildPlanRequirement{
 				Name: "dotnet-application",
 				Metadata: BuildPlanMetadata{
 					Launch: true,
 				},
 			})
+
+			fmt.Printf("Appended backwards compatible requirement: %s { %s }", backwardsCompatibleRequirements[len(backwardsCompatibleRequirements)-1].Name, backwardsCompatibleRequirements[len(backwardsCompatibleRequirements)-1].Metadata)
 
 			backwardsCompatibleRequirements = append(backwardsCompatibleRequirements, packit.BuildPlanRequirement{
 				Name: "dotnet-runtime",
@@ -249,6 +256,8 @@ func Detect(
 				},
 			})
 
+			fmt.Printf("Appended backwards compatible requirement: %s { %s }", backwardsCompatibleRequirements[len(backwardsCompatibleRequirements)-1].Name, backwardsCompatibleRequirements[len(backwardsCompatibleRequirements)-1].Metadata)
+
 			backwardsCompatibleRequirements = append(backwardsCompatibleRequirements, packit.BuildPlanRequirement{
 				Name: "dotnet-sdk",
 				Metadata: BuildPlanMetadata{
@@ -256,6 +265,8 @@ func Detect(
 					VersionSource: filepath.Base(projectFile),
 				},
 			})
+
+			fmt.Printf("Appended backwards compatible requirement: %s { %s }", backwardsCompatibleRequirements[len(backwardsCompatibleRequirements)-1].Name, backwardsCompatibleRequirements[len(backwardsCompatibleRequirements)-1].Metadata)
 
 			aspNetIsRequired, err := projectParser.ASPNetIsRequired(projectFile)
 			if err != nil {
@@ -271,6 +282,8 @@ func Detect(
 						Launch:        true,
 					},
 				})
+
+				fmt.Printf("Appended backwards compatible requirement: %s { %s }", backwardsCompatibleRequirements[len(backwardsCompatibleRequirements)-1].Name, backwardsCompatibleRequirements[len(backwardsCompatibleRequirements)-1].Metadata)
 			}
 
 			nodeIsRequired, err := projectParser.NodeIsRequired(projectFile)
@@ -287,6 +300,8 @@ func Detect(
 					},
 				})
 
+				fmt.Printf("Appended requirement: %s { %s }", requirements[len(requirements)-1].Name, requirements[len(requirements)-1].Metadata)
+
 				backwardsCompatibleRequirements = append(backwardsCompatibleRequirements, packit.BuildPlanRequirement{
 					Name: "node",
 					Metadata: BuildPlanMetadata{
@@ -294,6 +309,8 @@ func Detect(
 						Launch:        true,
 					},
 				})
+
+				fmt.Printf("Appended backwards compatible requirement: %s { %s }", backwardsCompatibleRequirements[len(backwardsCompatibleRequirements)-1].Name, backwardsCompatibleRequirements[len(backwardsCompatibleRequirements)-1].Metadata)
 			}
 
 			// If .NET Core is 3.1 version line, require ICU 70.*
@@ -315,11 +332,13 @@ func Detect(
 			Name:     "icu",
 			Metadata: icuBuildPlanMetadata,
 		})
-
+		fmt.Printf("Appended requirement: %s { %s }", requirements[len(requirements)-1].Name, requirements[len(requirements)-1].Metadata)
 		backwardsCompatibleRequirements = append(backwardsCompatibleRequirements, packit.BuildPlanRequirement{
 			Name:     "icu",
 			Metadata: icuBuildPlanMetadata,
 		})
+
+		fmt.Printf("Appended backwards compatible requirement: %s { %s }", backwardsCompatibleRequirements[len(backwardsCompatibleRequirements)-1].Name, backwardsCompatibleRequirements[len(backwardsCompatibleRequirements)-1].Metadata)
 
 		logger.Debug.Process("Returning build plan")
 		logger.Debug.Subprocess("Requirements:")
@@ -342,9 +361,15 @@ func Detect(
 }
 
 func getSDKVersion(version string) string {
+	if version == "7.0.0-0" {
+		fmt.Printf("Found Target SDK for .net 7")
+		return "7.0.0-0"
+	}
+
 	if version == "" {
 		return "*"
 	}
+	
 	pieces := strings.SplitN(version, ".", 3)
 	if len(pieces) < 3 {
 		pieces = append(pieces, "*")

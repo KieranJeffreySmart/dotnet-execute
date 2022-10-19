@@ -48,6 +48,8 @@ func (p ProjectFileParser) ParseVersion(path string) (string, error) {
 	}
 	defer file.Close()
 
+	fmt.Printf("Parsing Version From Project: %s", path)
+
 	var project struct {
 		PropertyGroups []struct {
 			RuntimeFrameworkVersion string
@@ -69,8 +71,15 @@ func (p ProjectFileParser) ParseVersion(path string) (string, error) {
 	// This regular expression matches on 'net<x>.<y>',
 	// 'net<x>.<y>-<platform>' & 'netcoreapp<x>.<y>'
 	targetFrameworkRe := regexp.MustCompile(`net(?:coreapp)?(?:(\d\.\d)(?:\-?\w+)?)$`)
-	for _, group := range project.PropertyGroups {
+	targetFramework7Re := regexp.MustCompile(`net(?:coreapp)?(?:(7\.\d)(?:\-?\w+)?)$`)
+	for _, group := range project.PropertyGroups {		
+		if len(targetFramework7Re.FindStringSubmatch(group.TargetFramework)) > 0 {
+			fmt.Printf("Found Target Framework: %s", group.TargetFramework)
+			return "7.0.0-0", nil
+		}
+
 		matches := targetFrameworkRe.FindStringSubmatch(group.TargetFramework)
+
 		if len(matches) == 2 {
 			return fmt.Sprintf("%s.0", matches[1]), nil
 		}
