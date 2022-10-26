@@ -75,5 +75,32 @@ func testSelfContainedExecutable(t *testing.T, context spec.G, it spec.S) {
 				Eventually(container).Should(Serve(ContainSubstring("Hello, world!")).OnPort(8080))
 			})
 		})
+		
+		context("when the self-contained executable uses .NET 7", func() {
+			it("builds and runs successfully", func() {
+				var err error
+				source, err = occam.Source(filepath.Join("testdata", "self_contained_executable_7"))
+				Expect(err).NotTo(HaveOccurred())
+
+				var logs fmt.Stringer
+				image, logs, err = pack.Build.
+					WithPullPolicy("never").
+					WithBuildpacks(
+						settings.Buildpacks.ICU.Online,
+						settings.Buildpacks.DotnetExecute.Online,
+					).
+					Execute(name, source)
+				Expect(err).ToNot(HaveOccurred(), logs.String)
+
+				container, err = docker.Container.Run.
+					WithEnv(map[string]string{"PORT": "8080"}).
+					WithPublish("8080").
+					WithPublishAll().
+					Execute(image.ID)
+				Expect(err).NotTo(HaveOccurred())
+
+				Eventually(container).Should(Serve(ContainSubstring("Hello, world!")).OnPort(8080))
+			})
+		})
 	})
 }
