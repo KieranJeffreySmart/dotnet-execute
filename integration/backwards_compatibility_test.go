@@ -117,10 +117,10 @@ func testBackwardsCompatibility(t *testing.T, context spec.G, it spec.S) {
 		})
 	})
 
-	context("when building a source app", func() {
+	context.Focus("when building a source app", func() {
 		it("builds and runs successfully", func() {
 			var err error
-			source, err = occam.Source(filepath.Join("testdata", "source_6"))
+			source, err = occam.Source(filepath.Join("testdata", "solution_7"))
 			Expect(err).NotTo(HaveOccurred())
 
 			var logs fmt.Stringer
@@ -128,8 +128,7 @@ func testBackwardsCompatibility(t *testing.T, context spec.G, it spec.S) {
 				WithPullPolicy("never").
 				WithBuildpacks(
 					settings.Buildpacks.ICU.Online,
-					settings.Buildpacks.DotnetCoreRuntime.Online,
-					settings.Buildpacks.DotnetCoreASPNet.Online,
+					settings.Buildpacks.DotnetCoreASPNetRuntime.Online,
 					settings.Buildpacks.DotnetCoreSDK.Online,
 					settings.Buildpacks.DotnetPublish.Online,
 					settings.Buildpacks.DotnetExecute.Online,
@@ -144,7 +143,7 @@ func testBackwardsCompatibility(t *testing.T, context spec.G, it spec.S) {
 				Execute(image.ID)
 			Expect(err).NotTo(HaveOccurred())
 
-			Eventually(container).Should(Serve(ContainSubstring("source_6_app")).OnPort(8080))
+			Eventually(container).Should(Serve(ContainSubstring("source_7_app")).OnPort(8080))
 		})
 	})
 }
