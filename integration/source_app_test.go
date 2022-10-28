@@ -163,7 +163,7 @@ func testSourceApp(t *testing.T, context spec.G, it spec.S) {
 		context.Focus("when 'net7.0' is specified as the TargetFramework", func() {
 			it("builds and runs successfully", func() {
 				var err error
-				source, err = occam.Source(filepath.Join("testdata", "source_7"))
+				source, err = occam.Source(filepath.Join("testdata", "solution_7"))
 				Expect(err).NotTo(HaveOccurred())
 
 				var logs fmt.Stringer
@@ -176,6 +176,9 @@ func testSourceApp(t *testing.T, context spec.G, it spec.S) {
 						settings.Buildpacks.DotnetCoreASPNetRuntime.Online,
 						settings.Buildpacks.DotnetExecute.Online,
 					).
+					WithEnv(map[string]string{
+						"BP_DOTNET_PROJECT_PATH": "source_7",
+					}).
 					Execute(name, source)
 				Expect(err).ToNot(HaveOccurred(), logs.String)
 

@@ -76,7 +76,7 @@ func testFdeASPNet(t *testing.T, context spec.G, it spec.S) {
 		})
 	})
 
-	context.Focus("when building a .NET 7 FDE app that uses the ASP.NET Framework", func() {
+	context("when building a .NET 7 FDE app that uses the ASP.NET Framework", func() {
 		var (
 			image     occam.Image
 			container occam.Container
